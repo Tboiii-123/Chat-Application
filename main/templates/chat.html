@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Chat Navbar -->
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      
+      <!-- Left: Back Arrow + Friend profile -->
+      <div class="flex items-center space-x-3">
+        <!-- Back Arrow -->
+        <a href="{% url 'index' %}" class="text-gray-600 hover:text-gray-800">
+          <svg xmlns="http://www.w3.org/2000/svg" 
+               class="h-6 w-6" fill="none" viewBox="0 0 24 24" 
+               stroke="currentColor">
+            <path stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+
+        <!-- Friend profile -->
+        <a href="#">
+          <img src="{{friend.profile.profile_img.url}}" 
+               alt="profile-picture" 
+               class="h-10 w-10 rounded-full object-cover">
+        </a>
+        <div>
+          <h3 class="text-lg font-bold">{{friend.profile.user.username}}</h3>
+          <p class="text-xs text-gray-500">online</p>
+        </div>
+      </div>
+
+      <!-- Right: Actions -->
+      <div class="flex items-center space-x-4">
+        <!-- Settings -->
+        <a href="{% url 'settings' %}">
+          <img src="{% static 'img/setting.png' %}" alt="settings" class="h-6 w-6">
+        </a>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+
+<!-- Chat Container -->
+<div class="flex flex-col h-[90vh] bg-gray-50">
+
+  <!-- Chat Messages -->
+  <div id="chat-body" class="flex-1 p-4 overflow-y-auto space-y-3">
+    {% for chat in chats %}
+      {% if chat.msg_sender == user and chat.msg_receiver == receiver %}
+        <div class="flex justify-end">
+          <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">{{chat}}</div>
+        </div>
+      {% elif chat.msg_sender == receiver and chat.msg_receiver == user %}
+        <div class="flex justify-start">
+          <div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">{{chat}}</div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Message Input -->
+  <form id="myform" method="POST" class="flex items-center gap-3 p-4 border-t bg-white">
+    {% csrf_token %}
+    <a href="">
+      <img src="{% static 'img/attach.png' %}" alt="attach" class="h-6 w-6">
+    </a>
+    <textarea id="text" name="message" placeholder="Type your message..." 
+      class="flex-1 resize-none px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-400"></textarea>
+    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Send</button>
+  </form>
+</div>
+
+<!-- JavaScript -->
+<script>
+const csrftoken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+let form = document.getElementById('myform');
+form.addEventListener('submit', sendChat);
+
+// auto scroll function
+function scrollToBottom() {
+  const chatBody = document.getElementById("chat-body");
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// scroll down when page loads
+window.onload = scrollToBottom;
+
+function sendChat(e) {
+  e.preventDefault();
+  let message = document.getElementById('text').value;
+  const data = { msg: message };
+  let url = "{% url 'sent_msg' friend.profile.id %}";
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify(data),
+  })
+  .then(response => response.json())
+  .then(data => {
+    let chat_body = document.getElementById('chat-body');
+    let chatMessageBox = document.createElement("div");
+    chatMessageBox.classList.add("flex","justify-end");
+    chatMessageBox.innerHTML = `<div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">${data}</div>`;
+    chat_body.append(chatMessageBox);
+    document.getElementById("text").value = "";
+    scrollToBottom();   // 👈 scroll after sending
+  })
+  .catch(error => console.error('Error:', error));
+}
+
+let counter = {{num}};
+setInterval(receivedMessages, 1000);
+
+function receivedMessages(){
+  let url = "{% url 'recv_msg' friend.profile.id %}";
+  fetch(url)
+  .then(response => response.json())
+  .then(data => {
+    if(data.length > counter){
+      let lastMsg = data[data.length-1];
+      let chat_body = document.getElementById('chat-body');
+      let chatMessageBox = document.createElement("div");
+      chatMessageBox.classList.add("flex","justify-start");
+      chatMessageBox.innerHTML = `<div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">${lastMsg}</div>`;
+      chat_body.append(chatMessageBox);
+      scrollToBottom();   // 👈 scroll after receiving
+    }
+    counter = data.length;
+  })
+  .catch(error => console.error('Error:', error));
+}
+</script>
+
+{% endblock %}

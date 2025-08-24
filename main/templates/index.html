@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block navbar %}
+{% include 'pop.html'%}
+{% endblock %}
+
+
+{% block content %}
+
+<!-- Full Page Background (same as login/register) -->
+<div class="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200">
+
+  <!-- Navbar -->
+  <body class="pt-6 bg-gray-100">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md fixed w-full z-50">
+  <div class="container mx-auto flex flex-col sm:flex-row items-center sm:justify-between py-4 px-4 sm:px-6 space-y-2 sm:space-y-0">
+
+    <!-- Top Row: Profile + Username -->
+    <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+      <!-- Profile Image -->
+      <a href="/profile">
+        <img src="{{ user.profile_img.url }}" alt="profile picture" 
+             class="w-16 h-16 rounded-full border-2 border-indigo-500">
+      </a>
+
+      <!-- Username -->
+      <span class="text-lg sm:text-xl font-bold text-gray-800 truncate">@{{ user.username }}</span>
+    </div>
+
+    <!-- Bottom Row: Search + Settings -->
+    <div class="flex items-center space-x-2 w-full sm:w-auto">
+      <!-- Search Form -->
+      <form class="flex-1 sm:flex-none" onsubmit="return false;">
+        <input id="searchInput" type="search" placeholder="Search friends..." 
+               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+      </form>
+
+      <!-- Settings Icon -->
+      <a href="{% url 'settings' %}">
+        <img src="{% static 'img/setting.png' %}" alt="settings" class="w-10 h-10 sm:w-8 sm:h-8">
+      </a>
+    </div>
+  </div>
+</nav>
+
+
+  <!-- Page Content -->
+  <main class="pt-44 sm:pt-24 container mx-auto px-6">
+
+
+<!-- End Navbar -->
+
+  <!-- Friends Section -->
+  <div class="container mx-auto mt-6 space-y-4">
+
+{% for item in friends_with_last_msg %}
+<a href="{% url 'chat' item.friend_profile.id %}" class="block">
+  <div class="flex items-start bg-white p-4 rounded-xl shadow hover:shadow-lg transition">
+
+    <!-- Friend Profile Image -->
+    <img src="{{ item.friend_profile.profile_img.url }}" alt="friend" 
+         class="w-14 h-14 rounded-full border mr-4">
+
+    <!-- Friend Info -->
+    <div class="flex-1">
+      <!-- Friend Username -->
+      <p class="font-semibold text-lg text-gray-800">{{ item.friend_username }}</p>
+      
+      <!-- Last message or placeholder -->
+      <p class="text-gray-600 text-sm mb-2">
+        {% if item.last_msg %}
+          {{ item.last_msg.body|truncatewords:6 }}
+        {% else %}
+          No messages yet
+        {% endif %}
+      </p>
+
+      <hr class="my-2">
+
+      <!-- Unread messages badge -->
+      {% if item.unread_count > 0 %}
+        <span class="msg inline-block px-2 py-1 text-sm bg-indigo-500 text-white rounded-full">
+          {{ item.unread_count }}
+        </span>
+      {% endif %}
+    </div>
+
+    <!-- Timestamp -->
+    <div class="text-xs text-gray-400 ml-2">
+      {% if item.last_msg %}
+        {{ item.last_msg.created_at|date:"H:i" }}
+      {% endif %}
+    </div>
+
+  </div>
+</a>
+{% endfor %}
+
+
+  </div>
+  <!-- End Friends Section -->
+
+</div>
+<!-- End Background -->
+
+<!-- JS Notifications -->
+<script>
+  setInterval(getNotification, 1000);
+
+  function getNotification() {
+    let url = "{% url 'notification' %}";
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        let chatNotificationBtn = document.getElementsByClassName("msg");
+        for (let i = 0; i < data.length; i++) {
+          chatNotificationBtn[i].innerText = data[i];
+        }
+      })
+      .catch(error => console.log(error));
+  }
+</script>
+
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Full Page Background -->
+<div class="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md fixed w-full z-50">
+    <div class="container mx-auto flex flex-col sm:flex-row items-center sm:justify-between py-4 px-4 sm:px-6 space-y-2 sm:space-y-0">
+
+      <!-- Top Row: Profile + Username -->
+      <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-start">
+        <!-- Profile Image -->
+        <a href="/profile">
+          <img src="{{ user.profile_img.url }}" alt="profile picture" 
+               class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-indigo-500">
+        </a>
+
+        <!-- Username -->
+        <span class="text-lg sm:text-xl font-bold text-gray-800 truncate">@{{ user.username }}</span>
+      </div>
+
+      <!-- Bottom Row: Search + Settings -->
+      <div class="flex items-center space-x-2 w-full sm:w-auto mt-2 sm:mt-0">
+        <!-- Search Form -->
+        <form class="flex-1 sm:flex-none" onsubmit="return false;">
+          <input id="searchInput" type="search" placeholder="Search friends..." 
+                 class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+        </form>
+
+        
+<!-- Logout -->
+        <a href="/logout">
+          <img src="{% static 'img/logout.png' %}" alt="logout" class="w-8 h-8">
+        </a>
+        
+      </div>
+    </div>
+  </nav>
+  <!-- End Navbar -->
+
+  <!-- Add top padding so content is below fixed navbar -->
+  <div class="pt-44 sm:pt-28"></div>
+
+  <!-- User Info Section -->
+  <div class="container mx-auto mt-8 bg-white rounded-2xl shadow-lg p-8 flex flex-col sm:flex-row items-center sm:items-start space-y-6 sm:space-y-0 sm:space-x-8">
+    
+    <!-- Profile Picture -->
+    <img src="{{ user.profile_img.url }}" alt="profile picture" 
+         class="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-indigo-500">
+
+    <!-- User Details -->
+    <div class="text-center sm:text-left">
+      <p class="text-2xl sm:text-3xl font-bold text-gray-900">{{ request.user.first_name }} {{ request.user.last_name }}</p>
+      <p class="text-lg sm:text-xl text-gray-700 mt-2">09035014430</p>
+      <p class="text-gray-500 italic mt-1">Can't talk, WhatsApp only</p>
+    </div>
+
+  </div>
+  <!-- End User Info -->
+
+  <!-- Settings Options -->
+  <div class="container mx-auto mt-12 sm:mt-16 space-y-4 px-4 sm:px-6">
+
+    <!-- Profile -->
+    <a href="/profile" class="block">
+      <div class="bg-white p-4 rounded-xl shadow hover:shadow-lg transition flex items-center justify-between">
+        <p class="text-gray-800 font-medium">Profile</p>
+        <span class="text-gray-500">&gt;</span>
+      </div>
+    </a>
+
+    <!-- Help -->
+    <a href="#" class="block">
+      <div class="bg-white p-4 rounded-xl shadow hover:shadow-lg transition flex items-center justify-between">
+        <p class="text-gray-800 font-medium">Help</p>
+        <span class="text-gray-500">&gt;</span>
+      </div>
+    </a>
+
+    <!-- App Language -->
+    <a href="#" class="block">
+      <div class="bg-white p-4 rounded-xl shadow hover:shadow-lg transition flex items-center justify-between">
+        <p class="text-gray-800 font-medium">App Language</p>
+        <span class="text-gray-500">&gt;</span>
+      </div>
+    </a>
+
+    <!-- Logout -->
+    <a href="/logout" class="block">
+      <div class="bg-white p-4 rounded-xl shadow hover:shadow-lg transition flex items-center justify-between">
+        <p class="text-red-600 font-medium">Logout</p>
+        <span class="text-red-400">&gt;</span>
+      </div>
+    </a>
+
+  </div>
+  <!-- End Settings Options -->
+
+</div>
+<!-- End Background -->
+
+{% endblock %}

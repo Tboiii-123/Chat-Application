@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+
+{% block navbar %}
+{% include 'pop.html'%}
+{% endblock %}
+
+
+{% block content %}
+<form method="POST" action="" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <!-- Profile Banner -->
+  <section class="relative w-full">
+    <img src="{% static 'img/banner2.png' %}" alt="Banner" class="w-full h-48 object-cover">
+
+    <!-- Profile Image -->
+    <div class="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+      <div class="relative">
+        <img src="{{ profile.profile_img.url }}" alt="Profile" class="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover">
+        
+        <!-- Upload button -->
+        <label for="upload" class="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer shadow hover:bg-indigo-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </label>
+        <input type="file" name="image" id="upload" class="hidden">
+      </div>
+    </div>
+  </section>
+
+  <!-- Profile Form -->
+  <section class="mt-20 max-w-2xl mx-auto bg-white shadow-lg rounded-2xl p-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Edit Profile</h2>
+
+    <div class="space-y-6">
+      <!-- Username -->
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Username</label>
+        <input type="text" value="{{ profile.username }}" readonly
+          class="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Name</label>
+        <input type="text" name="name" placeholder="John Doe" value="{{ user.first_name }} {{ user.last_name }}"
+          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex justify-between mt-8">
+      <a href="{% url 'index' %}" 
+        class="px-6 py-3 rounded-xl bg-red-500 text-white font-semibold shadow hover:bg-red-600 transition duration-200">
+        Cancel
+      </a>
+
+      <button type="submit" 
+        class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 transition duration-200">
+        Save Changes
+      </button>
+    </div>
+  </section>
+</form>
+{% endblock %}
