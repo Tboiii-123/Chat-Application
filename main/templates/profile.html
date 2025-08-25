@@ -40,16 +40,30 @@
       <!-- Username -->
       <div>
         <label class="block text-sm font-medium text-gray-600 mb-2">Username</label>
-        <input type="text" value="{{ profile.username }}" readonly
+        <input type="text" value="{{ profile.username }}" name="username" placeholder="@johndoe"
           class="w-full px-4 py-3 rounded-xl border border-gray-300 bg-gray-100 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
       </div>
 
       <!-- Name -->
       <div>
         <label class="block text-sm font-medium text-gray-600 mb-2">Name</label>
-        <input type="text" name="name" placeholder="John Doe" value="{{ user.first_name }} {{ user.last_name }}"
+        <input type="text" name="fname" placeholder="John Doe" value="{{ profile.fname }} "
           class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
       </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-600 mb-2">Phone</label>
+        <input type="text" name="number" placeholder="" value="{{profile.number}}"
+          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+
+      <div class="mb-6">
+  <label for="about" class="block text-sm sm:text-base font-medium text-gray-600 mb-2">About</label>
+  <input type="text" id="about" name="about" placeholder="Cant't talk Whastapp is Only" 
+         value="{{ profile.about }}"
+         class="w-full px-4 py-3 sm:py-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base transition duration-200">
+</div>
+
+      
     </div>
 
     <!-- Buttons -->

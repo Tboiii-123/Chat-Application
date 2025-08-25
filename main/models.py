@@ -61,6 +61,8 @@ class Profile(models.Model):
     address =models.CharField(max_length=200, blank=True)
 
     Dob =models.DateField(blank=True, null=True)
+
+    about =models.TextField(blank=True)
      
     #To add a default profile 
     #We use default attribute
@@ -93,7 +95,8 @@ class ChatMessage(models.Model):
   
     created_at = models.DateTimeField(auto_now_add=True,blank=True)
     is_read = models.BooleanField(default=False,blank=True)
-
+    voice_note = models.FileField(upload_to='voice_notes/', blank=True, null=True)
+    
 
 
     def __str__(self):

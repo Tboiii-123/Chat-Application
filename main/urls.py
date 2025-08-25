@@ -24,6 +24,10 @@ urlpatterns = [
     
     path('settings/', views.settings, name='settings'),
 
+    path('friend/<int:profile_id>/', views.friend_detail, name='friend_detail'),
+    
+    path('chat/voice/<int:profile_id>/', views.send_voice_note, name='send_voice_note'),
+
 
 
 

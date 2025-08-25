@@ -23,15 +23,17 @@
         </a>
 
         <!-- Friend profile -->
-        <a href="#">
-          <img src="{{friend.profile.profile_img.url}}" 
-               alt="profile-picture" 
-               class="h-10 w-10 rounded-full object-cover">
-        </a>
-        <div>
-          <h3 class="text-lg font-bold">{{friend.profile.user.username}}</h3>
-          <p class="text-xs text-gray-500">online</p>
-        </div>
+        <!-- Friend profile -->
+<a href="{% url 'friend_detail' friend.profile.id %}" class="flex items-center space-x-3">
+  <img src="{{friend.profile.profile_img.url}}" 
+       alt="profile-picture" 
+       class="h-10 w-10 rounded-full object-cover">
+  <div>
+    <h3 class="text-lg font-bold">{{friend.profile.user.username}}</h3>
+    <p class="text-xs text-gray-500">online</p>
+  </div>
+</a>
+
       </div>
 
       <!-- Right: Actions -->
@@ -51,30 +53,67 @@
 <div class="flex flex-col h-[90vh] bg-gray-50">
 
   <!-- Chat Messages -->
-  <div id="chat-body" class="flex-1 p-4 overflow-y-auto space-y-3">
+<div id="chat-body" class="flex-1 p-4 overflow-y-auto space-y-3">
     {% for chat in chats %}
-      {% if chat.msg_sender == user and chat.msg_receiver == receiver %}
-        <div class="flex justify-end">
-          <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">{{chat}}</div>
-        </div>
-      {% elif chat.msg_sender == receiver and chat.msg_receiver == user %}
-        <div class="flex justify-start">
-          <div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">{{chat}}</div>
-        </div>
-      {% endif %}
+        {% if chat.voice_note %}
+            {% if chat.msg_sender == user %}
+                <div class="flex justify-end">
+                    <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
+                        <audio controls src="{{ chat.voice_note.url }}"></audio>
+                    </div>
+                </div>
+            {% else %}
+                <div class="flex justify-start">
+                    <div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">
+                        <audio controls src="{{ chat.voice_note.url }}"></audio>
+                    </div>
+                </div>
+            {% endif %}
+        {% elif chat.body %}
+            {% if chat.msg_sender == user %}
+                <div class="flex justify-end">
+                    <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
+                        {{ chat.body }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="flex justify-start">
+                    <div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">
+                        {{ chat.body }}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
     {% endfor %}
-  </div>
+</div>
+
 
   <!-- Message Input -->
-  <form id="myform" method="POST" class="flex items-center gap-3 p-4 border-t bg-white">
-    {% csrf_token %}
-    <a href="">
-      <img src="{% static 'img/attach.png' %}" alt="attach" class="h-6 w-6">
-    </a>
-    <textarea id="text" name="message" placeholder="Type your message..." 
-      class="flex-1 resize-none px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-400"></textarea>
-    <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Send</button>
-  </form>
+<!-- Message Input -->
+<form id="myform" method="POST" class="flex items-center gap-3 p-4 border-t bg-white">
+  {% csrf_token %}
+
+  <!-- Attach -->
+  <a href="#">
+    <img src="{% static 'img/attach.png' %}" alt="attach" class="h-6 w-6">
+  </a>
+
+  <!-- Voice Record Button -->
+  <button type="button" id="record-btn" class="p-2 bg-indigo-500 rounded-full hover:bg-indigo-600 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a3 3 0 003 3h0a3 3 0 003-3V1m-6 11v5m0 0h3m-3 0H9m3 0v3m-3 0h6" />
+    </svg>
+  </button>
+
+  <!-- Text Message -->
+  <textarea id="text" name="message" placeholder="Type your message..." 
+    class="flex-1 resize-none px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-400"></textarea>
+
+  <!-- Send -->
+  <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Send</button>
+</form>
+
+
 </div>
 
 <!-- JavaScript -->
@@ -129,16 +168,76 @@ function receivedMessages(){
   .then(data => {
     if(data.length > counter){
       let lastMsg = data[data.length-1];
-      let chat_body = document.getElementById('chat-body');
-      let chatMessageBox = document.createElement("div");
-      chatMessageBox.classList.add("flex","justify-start");
-      chatMessageBox.innerHTML = `<div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">${lastMsg}</div>`;
+      const chat_body = document.getElementById('chat-body');
+      const chatMessageBox = document.createElement("div");
+
+      if(lastMsg.type === 'text') {
+        chatMessageBox.classList.add("flex","justify-start");
+        chatMessageBox.innerHTML = `<div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">${lastMsg.content}</div>`;
+      } else if(lastMsg.type === 'voice') {
+        chatMessageBox.classList.add("flex","justify-start");
+        chatMessageBox.innerHTML = `<div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">
+                                      <audio controls src="${lastMsg.url}"></audio>
+                                     </div>`;
+      }
+
       chat_body.append(chatMessageBox);
-      scrollToBottom();   // 👈 scroll after receiving
+      scrollToBottom();
     }
     counter = data.length;
   })
-  .catch(error => console.error('Error:', error));
+  .catch(console.error);
+}
+
+
+let recordBtn = document.getElementById("record-btn");
+let mediaRecorder;
+let audioChunks = [];
+
+recordBtn.addEventListener("click", async () => {
+  if (!mediaRecorder || mediaRecorder.state === "inactive") {
+    // Start recording
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = sendVoiceNote;
+
+    mediaRecorder.start();
+    recordBtn.classList.add("bg-red-500"); // Recording indicator
+  } else if (mediaRecorder.state === "recording") {
+    // Stop recording
+    mediaRecorder.stop();
+    recordBtn.classList.remove("bg-red-500");
+  }
+});
+
+// Send audio to backend
+function sendVoiceNote() {
+  const blob = new Blob(audioChunks, { type: "audio/webm" });
+  const formData = new FormData();
+  formData.append("voice_note", blob, "voice_note.webm");
+  formData.append("csrfmiddlewaretoken", csrftoken);
+
+  fetch("{% url 'send_voice_note' friend.profile.id %}", {
+    method: "POST",
+    body: formData,
+  })
+  .then(response => response.json())
+  .then(data => {
+    // Append audio message to chat
+    const chatBody = document.getElementById("chat-body");
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("flex","justify-end");
+    msgDiv.innerHTML = `
+      <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
+        <audio controls src="${data.url}"></audio>
+      </div>`;
+    chatBody.append(msgDiv);
+    scrollToBottom();
+  })
+  .catch(console.error);
 }
 </script>
 

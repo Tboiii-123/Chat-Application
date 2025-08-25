@@ -94,6 +94,8 @@ def register(request):
 
         email =request.POST.get('email')
 
+        number =request.POST.get('number')
+
         
         password1 =request.POST.get('password1')
 
@@ -141,6 +143,7 @@ def register(request):
                                                             email=user_model.email,
 
                                                             lname =user_model.last_name ,
+                                                            number =number,
                                                             username =username                                                        
                                                             )
 
@@ -222,7 +225,15 @@ def profile(request):
             image =request.FILES.get('image')
                 
         
-        email =request.POST.get('email')
+        username =request.POST.get('username')
+        
+        number =request.POST.get('number')
+        about =request.POST.get('about')
+
+        user_profile.username =username
+        user_profile.number =number
+        user_profile.about =about
+        
         
 
         user_profile.profile_img =image
@@ -241,48 +252,39 @@ def profile(request):
 
 
 @login_required(login_url='/login/')
-def chat(request,pk):
+def chat(request, pk):
+    friend = get_object_or_404(Friend, profile_id=pk)
+    sender_profile = request.user.profile
+    receiver_profile = friend.profile
 
-    friend = Friend.objects.get(profile_id=pk)
-    sender_profile =request.user.profile
+    # Get all chat messages between the two
+    chats = ChatMessage.objects.filter(
+        Q(msg_sender=sender_profile, msg_receiver=receiver_profile) |
+        Q(msg_sender=receiver_profile, msg_receiver=sender_profile)
+    ).order_by("created_at")  # oldest first
 
-
-    receiver_profile  =Profile.objects.get(id=friend.profile.id)
-
-
-    chats =ChatMessage.objects.all()
-
-    recv_message  =ChatMessage.objects.filter(
-        msg_sender =receiver_profile,
-        msg_receiver =sender_profile
-    )
-    
+    recv_message_count = ChatMessage.objects.filter(
+        msg_sender=receiver_profile,
+        msg_receiver=sender_profile
+    ).count()
 
     if request.method == "POST":
+        Msg = request.POST.get('message')
+        if Msg:
+            ChatMessage.objects.create(
+                body=Msg,
+                msg_sender=sender_profile,
+                msg_receiver=receiver_profile
+            )
+        return redirect('chat', pk=friend.profile.id)
 
-        Msg=request.POST.get('message')
-
-
-        ChatMessage.objects.create(
-            body =Msg,
-            msg_sender=sender_profile,
-            msg_receiver=receiver_profile
-        )
-
-        
-
-        return redirect('chat',pk=friend.profile.id)
-
-
-    return render(request,'chat.html',{
-        'friend':friend,
-        'user':sender_profile,
-        'receiver':receiver_profile,
-        'chats':chats,
-        'num':recv_message.count(),
-        
+    return render(request, 'chat.html', {
+        'friend': friend,
+        'user': sender_profile,
+        'receiver': receiver_profile,
+        'chats': chats,
+        'num': recv_message_count,
     })
-
 
 
 
@@ -306,23 +308,37 @@ def sent_msg(request,pk):
     return JsonResponse(new_chat_message.body,safe=False)
 
 
-def receivedMessages(request,pk):
+from django.http import JsonResponse
+from .models import ChatMessage, Friend, Profile
+
+def receivedMessages(request, pk):
     friend = Friend.objects.get(profile_id=pk)
-    sender_profile =request.user.profile
-    receiver_profile  =Profile.objects.get(id=friend.profile.id)
-    # Getting all the chat
-    chats_arr =[]
-    chats =ChatMessage.objects.filter(
-        msg_sender =receiver_profile,
-        msg_receiver =sender_profile
+    sender_profile = request.user.profile
+    receiver_profile = Profile.objects.get(id=friend.profile.id)
+
+    chats_arr = []
+
+    chats = ChatMessage.objects.filter(
+        msg_sender=receiver_profile,
+        msg_receiver=sender_profile
     )
 
-
     for chat in chats:
-        chats_arr.append(chat.body)
+        if chat.voice_note:
+            # If it's a voice note, send type and URL
+            chats_arr.append({
+                "type": "voice",
+                "url": chat.voice_note.url
+            })
+        else:
+            # Otherwise, send text message
+            chats_arr.append({
+                "type": "text",
+                "content": chat.body
+            })
 
+    return JsonResponse(chats_arr, safe=False)
 
-    return JsonResponse(chats_arr,safe=False)
 
 
 
@@ -368,10 +384,37 @@ def settings(request):
     })
 
 
+@login_required(login_url='/login/')
+def friend_detail(request, profile_id):
+    friend_profile = get_object_or_404(Profile, id=profile_id)
+    context = {
+        'friend': friend_profile
+    }
+    return render(request, 'friend_details.html', context)
 
 
 
 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import ChatMessage, Profile
+import os
+
+
+from django.http import JsonResponse
+from .models import ChatMessage
+
+@csrf_exempt
+def send_voice_note(request, profile_id):
+    if request.method == "POST" and request.FILES.get("voice_note"):
+        voice = request.FILES["voice_note"]
+        chat = ChatMessage.objects.create(
+            msg_sender=request.user.profile,
+            msg_receiver_id=profile_id,
+            voice_note=voice  # make sure your ChatMessage has a voice_note FileField
+        )
+        return JsonResponse({"url": chat.voice_note.url})
+    return JsonResponse({"error": "No voice note"}, status=400)
 
 
 
