@@ -10,110 +10,70 @@
       
       <!-- Left: Back Arrow + Friend profile -->
       <div class="flex items-center space-x-3">
-        <!-- Back Arrow -->
         <a href="{% url 'index' %}" class="text-gray-600 hover:text-gray-800">
-          <svg xmlns="http://www.w3.org/2000/svg" 
-               class="h-6 w-6" fill="none" viewBox="0 0 24 24" 
-               stroke="currentColor">
-            <path stroke-linecap="round" 
-                  stroke-linejoin="round" 
-                  stroke-width="2" 
-                  d="M15 19l-7-7 7-7" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </a>
 
-        <!-- Friend profile -->
-        <!-- Friend profile -->
-<a href="{% url 'friend_detail' friend.profile.id %}" class="flex items-center space-x-3">
-  <img src="{{friend.profile.profile_img.url}}" 
-       alt="profile-picture" 
-       class="h-10 w-10 rounded-full object-cover">
-  <div>
-    <h3 class="text-lg font-bold">{{friend.profile.user.username}}</h3>
-    <p class="text-xs text-gray-500">online</p>
-  </div>
-</a>
-
+        <a href="{% url 'friend_detail' friend.profile.id %}" class="flex items-center space-x-3">
+          <img src="{{friend.profile.profile_img.url}}" alt="profile-picture" class="h-10 w-10 rounded-full object-cover">
+          <div>
+            <h3 class="text-lg font-bold">{{friend.profile.user.username}}</h3>
+            <p class="text-xs text-gray-500">online</p>
+          </div>
+        </a>
       </div>
 
-      <!-- Right: Actions -->
       <div class="flex items-center space-x-4">
-        <!-- Settings -->
         <a href="{% url 'settings' %}">
           <img src="{% static 'img/setting.png' %}" alt="settings" class="h-6 w-6">
         </a>
       </div>
-
     </div>
   </div>
 </nav>
-
 
 <!-- Chat Container -->
 <div class="flex flex-col h-[90vh] bg-gray-50">
 
   <!-- Chat Messages -->
-<div id="chat-body" class="flex-1 p-4 overflow-y-auto space-y-3">
+  <div id="chat-body" class="flex-1 p-4 overflow-y-auto space-y-3">
     {% for chat in chats %}
         {% if chat.voice_note %}
-            {% if chat.msg_sender == user %}
-                <div class="flex justify-end">
-                    <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
-                        <audio controls src="{{ chat.voice_note.url }}"></audio>
-                    </div>
+            <div class="flex {% if chat.msg_sender == user %}justify-end{% else %}justify-start{% endif %}">
+                <div class="{% if chat.msg_sender == user %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-800{% endif %} px-4 py-2 rounded-2xl max-w-xs">
+                    <audio controls src="{{ chat.voice_note.url }}"></audio>
                 </div>
-            {% else %}
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">
-                        <audio controls src="{{ chat.voice_note.url }}"></audio>
-                    </div>
-                </div>
-            {% endif %}
+            </div>
         {% elif chat.body %}
-            {% if chat.msg_sender == user %}
-                <div class="flex justify-end">
-                    <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
-                        {{ chat.body }}
-                    </div>
+            <div class="flex {% if chat.msg_sender == user %}justify-end{% else %}justify-start{% endif %}">
+                <div class="{% if chat.msg_sender == user %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-800{% endif %} px-4 py-2 rounded-2xl max-w-xs">
+                    {{ chat.body }}
                 </div>
-            {% else %}
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">
-                        {{ chat.body }}
-                    </div>
-                </div>
-            {% endif %}
+            </div>
         {% endif %}
     {% endfor %}
-</div>
-
+  </div>
 
   <!-- Message Input -->
-<!-- Message Input -->
-<form id="myform" method="POST" class="flex items-center gap-3 p-4 border-t bg-white">
-  {% csrf_token %}
+  <form id="myform" method="POST" class="flex items-center gap-3 p-4 border-t bg-white">
+    {% csrf_token %}
 
-  <!-- Attach -->
-  <a href="#">
-    <img src="{% static 'img/attach.png' %}" alt="attach" class="h-6 w-6">
-  </a>
+    <a href="#"><img src="{% static 'img/attach.png' %}" alt="attach" class="h-6 w-6"></a>
 
-  <!-- Voice Record Button -->
-  <button type="button" id="record-btn" class="p-2 bg-indigo-500 rounded-full hover:bg-indigo-600 transition">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a3 3 0 003 3h0a3 3 0 003-3V1m-6 11v5m0 0h3m-3 0H9m3 0v3m-3 0h6" />
-    </svg>
-  </button>
+    <!-- Voice Record Button -->
+    <button type="button" id="record-btn" class="p-2 bg-indigo-500 rounded-full hover:bg-indigo-600 transition flex items-center justify-center">
+      <svg id="record-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a3 3 0 003 3h0a3 3 0 003-3V1m-6 11v5m0 0h3m-3 0H9m3 0v3m-3 0h6" />
+      </svg>
+    </button>
 
-  <!-- Text Message -->
-  <textarea id="text" name="message" placeholder="Type your message..." 
-    class="flex-1 resize-none px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-400"></textarea>
+    <textarea id="text" name="message" placeholder="Type your message..." 
+      class="flex-1 resize-none px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-400"></textarea>
 
-  <!-- Send -->
-  <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Send</button>
-</form>
-
-
+    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Send</button>
+  </form>
 </div>
 
 <!-- JavaScript -->
@@ -122,30 +82,23 @@ const csrftoken = document.querySelector('input[name=csrfmiddlewaretoken]').valu
 let form = document.getElementById('myform');
 form.addEventListener('submit', sendChat);
 
-// auto scroll function
 function scrollToBottom() {
   const chatBody = document.getElementById("chat-body");
   chatBody.scrollTop = chatBody.scrollHeight;
 }
-
-// scroll down when page loads
 window.onload = scrollToBottom;
 
 function sendChat(e) {
   e.preventDefault();
   let message = document.getElementById('text').value;
-  const data = { msg: message };
   let url = "{% url 'sent_msg' friend.profile.id %}";
 
   fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
-    body: JSON.stringify(data),
+    headers: {'Content-Type':'application/json','X-CSRFToken': csrftoken},
+    body: JSON.stringify({msg: message}),
   })
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
     let chat_body = document.getElementById('chat-body');
     let chatMessageBox = document.createElement("div");
@@ -153,28 +106,28 @@ function sendChat(e) {
     chatMessageBox.innerHTML = `<div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">${data}</div>`;
     chat_body.append(chatMessageBox);
     document.getElementById("text").value = "";
-    scrollToBottom();   // 👈 scroll after sending
+    scrollToBottom();
   })
-  .catch(error => console.error('Error:', error));
+  .catch(console.error);
 }
 
+// Received messages polling
 let counter = {{num}};
 setInterval(receivedMessages, 1000);
-
 function receivedMessages(){
   let url = "{% url 'recv_msg' friend.profile.id %}";
   fetch(url)
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
     if(data.length > counter){
       let lastMsg = data[data.length-1];
-      const chat_body = document.getElementById('chat-body');
+      const chat_body = document.getElementById("chat-body");
       const chatMessageBox = document.createElement("div");
 
-      if(lastMsg.type === 'text') {
+      if(lastMsg.type === 'text'){
         chatMessageBox.classList.add("flex","justify-start");
         chatMessageBox.innerHTML = `<div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">${lastMsg.content}</div>`;
-      } else if(lastMsg.type === 'voice') {
+      } else if(lastMsg.type === 'voice'){
         chatMessageBox.classList.add("flex","justify-start");
         chatMessageBox.innerHTML = `<div class="bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs">
                                       <audio controls src="${lastMsg.url}"></audio>
@@ -189,15 +142,15 @@ function receivedMessages(){
   .catch(console.error);
 }
 
-
+// Voice Recording
 let recordBtn = document.getElementById("record-btn");
+let recordIcon = document.getElementById("record-icon");
 let mediaRecorder;
 let audioChunks = [];
 
 recordBtn.addEventListener("click", async () => {
-  if (!mediaRecorder || mediaRecorder.state === "inactive") {
-    // Start recording
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  if(!mediaRecorder || mediaRecorder.state === "inactive"){
+    const stream = await navigator.mediaDevices.getUserMedia({ audio:true });
     mediaRecorder = new MediaRecorder(stream);
     audioChunks = [];
 
@@ -205,40 +158,42 @@ recordBtn.addEventListener("click", async () => {
     mediaRecorder.onstop = sendVoiceNote;
 
     mediaRecorder.start();
-    recordBtn.classList.add("bg-red-500"); // Recording indicator
-  } else if (mediaRecorder.state === "recording") {
-    // Stop recording
+    recordBtn.classList.add("bg-red-500");
+    recordIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6h12v12H6z"/>`; // stop icon
+  } else if(mediaRecorder.state === "recording"){
     mediaRecorder.stop();
     recordBtn.classList.remove("bg-red-500");
+    recordIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a3 3 0 003 3h0a3 3 0 003-3V1m-6 11v5m0 0h3m-3 0H9m3 0v3m-3 0h6"/>`; // mic icon
   }
 });
 
-// Send audio to backend
-function sendVoiceNote() {
-  const blob = new Blob(audioChunks, { type: "audio/webm" });
+function sendVoiceNote(){
+  const blob = new Blob(audioChunks,{type:"audio/webm"});
   const formData = new FormData();
   formData.append("voice_note", blob, "voice_note.webm");
   formData.append("csrfmiddlewaretoken", csrftoken);
 
-  fetch("{% url 'send_voice_note' friend.profile.id %}", {
-    method: "POST",
-    body: formData,
-  })
-  .then(response => response.json())
+  fetch("{% url 'send_voice_note' friend.profile.id %}", {method:"POST", body:formData})
+  .then(res => res.json())
   .then(data => {
-    // Append audio message to chat
     const chatBody = document.getElementById("chat-body");
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("flex","justify-end");
-    msgDiv.innerHTML = `
-      <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
-        <audio controls src="${data.url}"></audio>
-      </div>`;
+    msgDiv.innerHTML = `<div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs">
+                          <audio controls src="${data.url}"></audio>
+                        </div>`;
     chatBody.append(msgDiv);
     scrollToBottom();
   })
   .catch(console.error);
 }
+
+// Only one audio plays at a time
+document.addEventListener('play', function(e){
+  const audios = document.querySelectorAll('audio');
+  audios.forEach(a => { if(a !== e.target) a.pause(); });
+});
+
 </script>
 
 {% endblock %}
