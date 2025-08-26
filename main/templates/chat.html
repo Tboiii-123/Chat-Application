@@ -113,6 +113,7 @@ function sendChat(e) {
 
 // Received messages polling
 let counter = {{num}};
+
 setInterval(receivedMessages, 1000);
 function receivedMessages(){
   let url = "{% url 'recv_msg' friend.profile.id %}";

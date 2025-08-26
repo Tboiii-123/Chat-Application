@@ -7,51 +7,50 @@
 <div class="min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200">
 
   <!-- Navbar -->
-<nav class="bg-white shadow-md fixed w-full z-50">
-  <div class="container mx-auto flex items-center justify-between py-4 px-4 sm:px-6">
+  <nav class="bg-white shadow-md fixed w-full z-50">
+    <div class="container mx-auto flex items-center justify-between py-4 px-4 sm:px-6">
 
-    <!-- Left: Back Arrow + (Desktop Only) Profile -->
-    <div class="flex items-center space-x-3">
-      <!-- Back Arrow (always visible) -->
-      <a href="{% url 'index' %}" class="text-gray-600 hover:text-gray-800">
-        <svg xmlns="http://www.w3.org/2000/svg" 
-             class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" 
-             stroke="currentColor">
-          <path stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
-                d="M15 19l-7-7 7-7" />
-        </svg>
-      </a>
+      <!-- Left: Back Arrow + Profile -->
+      <div class="flex items-center space-x-3">
+        <!-- Back Arrow -->
+        <a href="{% url 'index' %}" class="text-gray-600 hover:text-gray-800">
+          <svg xmlns="http://www.w3.org/2000/svg" 
+               class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" 
+               stroke="currentColor">
+            <path stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
 
-      <!-- Profile Image (hidden on mobile) -->
-      <a href="/profile" class="hidden sm:block">
-        <img src="{{ user.profile_img.url }}" alt="profile picture" 
-             class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-indigo-500">
-      </a>
+        <!-- Profile Image -->
+        <a href="/profile" class="hidden sm:block">
+          <img src="{{ user.profile_img.url }}" alt="profile picture" 
+               class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-indigo-500">
+        </a>
 
-      <!-- Username (always visible) -->
-      <span class="text-lg sm:text-xl font-bold text-gray-800 truncate">@{{ user.username }}</span>
+        <!-- Username -->
+        <span class="text-lg sm:text-xl font-bold text-gray-800 truncate">@{{ user.username }}</span>
+      </div>
+
+      <!-- Right: Search + Logout -->
+      <div class="flex items-center space-x-2 w-full sm:w-auto">
+        <!-- Search Form -->
+        <form class="flex-1 sm:flex-none" onsubmit="return false;">
+          <input id="searchInput" type="search" placeholder="Search friends..." 
+                 class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
+        </form>
+
+        <!-- Logout -->
+        <a href="/logout">
+          <img src="{% static 'img/logout.png' %}" alt="logout" class="w-8 h-8 sm:w-10 sm:h-10">
+        </a>
+      </div>
+
     </div>
-
-    <!-- Right: Search + Logout -->
-    <div class="flex items-center space-x-2 w-full sm:w-auto">
-      <!-- Search Form -->
-      <form class="flex-1 sm:flex-none" onsubmit="return false;">
-        <input id="searchInput" type="search" placeholder="Search friends..." 
-               class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
-      </form>
-
-      <!-- Logout -->
-      <a href="/logout">
-        <img src="{% static 'img/logout.png' %}" alt="logout" class="w-8 h-8 sm:w-10 sm:h-10">
-      </a>
-    </div>
-
-  </div>
-</nav>
-
-<!-- End Navbar -->
+  </nav>
+  <!-- End Navbar -->
 
   <!-- Add top padding so content is below fixed navbar -->
   <div class="pt-44 sm:pt-28"></div>
@@ -66,8 +65,8 @@
     <!-- User Details -->
     <div class="text-center sm:text-left">
       <p class="text-2xl sm:text-3xl font-bold text-gray-900">{{ user.fname }} {{ user.lname }}</p>
-      <p class="text-lg sm:text-xl text-gray-700 mt-2">{{user.number}}</p>
-      <p class="text-gray-500 italic mt-1">{{user.about}}</p>
+      <p class="text-lg sm:text-xl text-gray-700 mt-2">{{ user.number }}</p>
+      <p class="text-gray-500 italic mt-1">{{ user.about }}</p>
     </div>
 
   </div>
@@ -108,10 +107,26 @@
       </div>
     </a>
 
+    <!-- Delete Account -->
+    <a href="javascript:void(0);" onclick="confirmDelete()" class="block">
+      <div class="bg-white p-4 rounded-xl shadow hover:shadow-lg transition flex items-center justify-between">
+        <p class="text-red-700 font-medium">Delete Account</p>
+        <span class="text-red-500">&gt;</span>
+      </div>
+    </a>
+
   </div>
   <!-- End Settings Options -->
 
 </div>
 <!-- End Background -->
+
+<script>
+function confirmDelete() {
+  if (confirm("⚠️ Are you sure you want to delete your account? This action cannot be undone.")) {
+    window.location.href = "{% url 'delete_account' %}";
+  }
+}
+</script>
 
 {% endblock %}

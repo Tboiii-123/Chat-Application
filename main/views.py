@@ -1,82 +1,62 @@
 from django.shortcuts import render,get_object_or_404,redirect
-
-
 from django.contrib.auth.decorators import login_required
-
-
 #To register we import
 from django.contrib.auth import get_user_model
-
 #For pop up messages
 from django.contrib import messages
-
-
 #For Authentification
 from django.contrib.auth import authenticate,login ,logout
-
 from .models import Profile,ChatMessage,Friend
-
 from django.http import JsonResponse
-
 import json
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.db.models import Q, Count
+
+
+
 
 
 User = get_user_model()
 
 
-# @login_required(login_url='/login/')
-# def index(request):
 
+def get_friends_with_data(user):
+    friends = Friend.objects.exclude(profile=user)
+    friends_data = []
+    for friend in friends:
+        last_msg = ChatMessage.objects.filter(
+            Q(msg_sender=user, msg_receiver=friend.profile) |
+            Q(msg_sender=friend.profile, msg_receiver=user)
+        ).order_by('-id').first()
 
-#     user = request.user.profile
+        unread_count = ChatMessage.objects.filter(
+            msg_sender=friend.profile, msg_receiver=user, is_read=False
+        ).count()
 
-
-#     friends =Friend.objects.exclude(profile=request.user.profile)
-
-#         # last_msg =ChatMessage.objects.all(
-#         #     msg_sender=
-#         #     msg_receiver
-#         # )
-
-
-#     return render(request,'index.html',{
-#         'friends':friends,
-#         'user':user
-        
-#     })
-
-
-from django.db.models import Q
-
+        friends_data.append({
+            "id": friend.profile.id,
+            "username": friend.profile.username,
+            "profile_img": friend.profile.profile_img.url if friend.profile.profile_img else None,
+            "last_msg": last_msg.body if last_msg else "No messages yet",
+            "last_msg_time": last_msg.created_at.strftime("%H:%M") if last_msg else "",
+            "unread_count": unread_count,
+        })
+    return friends_data
 @login_required(login_url='/login/')
 def index(request):
     user = request.user.profile
-    friends = Friend.objects.exclude(profile=user)
-
-    friends_with_last_msg = []
-
-    for friend in friends:
-        # Get the friend's profile
-        friend_profile = friend.profile
-
-        # Get the last message between user and this friend
-        last_msg = ChatMessage.objects.filter(
-            Q(msg_sender=user, msg_receiver=friend_profile) |
-            Q(msg_sender=friend_profile, msg_receiver=user)
-        ).order_by('-id').first()
-
-        friends_with_last_msg.append({
-    
-              "friend_username": friend_profile.username,  # ✅ Username
-            "friend_profile": friend_profile,  
-            "last_msg": last_msg
-        })
-
+    friends_with_last_msg = get_friends_with_data(user)
     return render(request, 'index.html', {
         'friends_with_last_msg': friends_with_last_msg,
         'user': user,
-
     })
+
+
+@login_required(login_url='/login/')
+def friends_list(request):
+    user = request.user.profile
+    return JsonResponse({"friends": get_friends_with_data(user)})
 
 
 
@@ -370,8 +350,6 @@ def chatNotification(request):
 
     return JsonResponse(arr, safe=False)
 
-
-
 def settings(request):
     sender_profile =request.user.profile
     
@@ -384,6 +362,15 @@ def settings(request):
     })
 
 
+
+@login_required(login_url='/login/')
+def delete_account(request):
+    user = request.user
+    user.delete()  # This deletes user + linked profile automatically if CASCADE
+    return redirect('register')  # Redirect to signup or homepage
+
+
+
 @login_required(login_url='/login/')
 def friend_detail(request, profile_id):
     friend_profile = get_object_or_404(Profile, id=profile_id)
@@ -394,15 +381,6 @@ def friend_detail(request, profile_id):
 
 
 
-
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .models import ChatMessage, Profile
-import os
-
-
-from django.http import JsonResponse
-from .models import ChatMessage
 
 @csrf_exempt
 def send_voice_note(request, profile_id):
@@ -417,21 +395,3 @@ def send_voice_note(request, profile_id):
     return JsonResponse({"error": "No voice note"}, status=400)
 
 
-
-'''
-lawalhussein775@gmail.com
-123
-
-
-wakil
-tayelawal775@gmail.com
-123
-
-fatai
-fatailawal@gmail.com
-123
-
-raez
-raez@gmail.com
-123
-'''

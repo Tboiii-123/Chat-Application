@@ -28,6 +28,11 @@ urlpatterns = [
     
     path('chat/voice/<int:profile_id>/', views.send_voice_note, name='send_voice_note'),
 
+     path('api/friends/', views.friends_list, name='friends_list'),
+
+     path('delete-account/', views.delete_account, name='delete_account'),
+
+
 
 
 
